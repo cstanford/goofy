@@ -93,7 +93,6 @@ export default function Search({ showNsfw, setShowNsfw }: SearchProps) {
   }, [offset]);
 
   async function loadGifs() {
-    if (searchTerm === undefined) return;
     await getGifs(searchTerm, offset, showNsfw)
       .then((newGifs) => {
         offset === 0 ? setGifs(newGifs) : setGifs([...gifs, ...newGifs]);
@@ -102,6 +101,9 @@ export default function Search({ showNsfw, setShowNsfw }: SearchProps) {
   }
 
   const handleSearchClick = () => {
+    if (searchTerm === undefined || searchTerm.trim() === '') 
+        return;
+
     prettyFly("btnSearch");
     setOffset(0);
     loadGifs();
