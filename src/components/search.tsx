@@ -13,12 +13,14 @@ import {
   CardActionArea,
   CardHeader,
   IconButton,
+  Snackbar,
 } from "@material-ui/core";
 import FileCopyIcon from "@material-ui/icons/FileCopy";
 import config from "../config";
 import { Gif } from "../models";
 import { useEffect } from "react";
 import { showNsfwProps } from "../commonProps";
+import MuiAlert, { AlertProps } from "@material-ui/lab/Alert";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -41,6 +43,7 @@ const useStyles = makeStyles((theme: Theme) =>
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
+      marginBottom: theme.spacing(4),
     },
     stepperButton: {
       margin: theme.spacing(2),
@@ -54,8 +57,12 @@ const prettyFly = (btnId: string) => {
   btn!.innerText = "Uh Huh! Uh Huh!";
   setTimeout(() => {
     btn!.innerText = originalText;
-  }, 2500);
+  }, 3000);
 };
+
+function Alert(props: AlertProps) {
+  return <MuiAlert elevation={6} variant="filled" {...props} />;
+}
 
 export interface SearchProps extends showNsfwProps {}
 
@@ -64,6 +71,7 @@ export default function Search({ showNsfw, setShowNsfw }: SearchProps) {
   const [searchTerm, setSearchTerm] = React.useState<string>("");
   const [gifs, setGifs] = React.useState<Gif[]>([]);
   const [offset, setOffset] = React.useState<number>(0);
+  const [showSnack, setShowSnack] = React.useState<boolean>(false);
 
   async function getRandoms() {
     const g1 = await getRandomGif();
@@ -188,9 +196,10 @@ export default function Search({ showNsfw, setShowNsfw }: SearchProps) {
                   action={
                     <IconButton aria-label="settings">
                       <FileCopyIcon
-                        onClick={() =>
-                          navigator.clipboard.writeText(gif.bitlyUrl)
-                        }
+                        onClick={() => {
+                          navigator.clipboard.writeText(gif.bitlyUrl);
+                          setShowSnack(true);
+                        }}
                       />
                     </IconButton>
                   }
@@ -216,6 +225,17 @@ export default function Search({ showNsfw, setShowNsfw }: SearchProps) {
           </Button>
         </Container>
       </div>
+      <Snackbar
+        anchorOrigin={{
+          vertical: "top",
+          horizontal: "right",
+        }}
+        autoHideDuration={3000}
+        open={showSnack}
+        onClose={() => setShowSnack(false)}
+      >
+        <Alert severity="success">Giphy copied to clippy!</Alert>
+      </Snackbar>
     </div>
   );
 }
