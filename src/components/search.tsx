@@ -73,17 +73,16 @@ export default function Search({ showNsfw, setShowNsfw }: SearchProps) {
   const [offset, setOffset] = React.useState<number>(0);
   const [showSnack, setShowSnack] = React.useState<boolean>(false);
 
-  async function getRandoms() {
-    // giphy random api only returns 1 gif at a time ;(
-    const g1 = await getRandomGif(showNsfw);
-    const g2 = await getRandomGif(showNsfw);
-    const g3 = await getRandomGif(showNsfw);
-    setGifs([g1, g2, g3]);
-  }
-
   useEffect(() => {
-    getRandoms();
-  }, [showNsfw]);
+    const getInitialData = async () => {
+      // giphy random api only returns 1 gif at a time ;(
+      const g1 = await getRandomGif(showNsfw);
+      const g2 = await getRandomGif(showNsfw);
+      const g3 = await getRandomGif(showNsfw);
+      setGifs([g1, g2, g3]);
+    };
+    getInitialData();
+  }, [showNsfw])
 
   useEffect(() => {
     if (offset != 0) {
