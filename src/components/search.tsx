@@ -16,11 +16,11 @@ import {
   Snackbar,
 } from "@material-ui/core";
 import FileCopyIcon from "@material-ui/icons/FileCopy";
-import config from "../config";
 import { Gif } from "../models";
 import { useEffect } from "react";
 import { showNsfwProps } from "../commonProps";
 import MuiAlert, { AlertProps } from "@material-ui/lab/Alert";
+import { getRandomGif, getGifs } from "../data";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -74,9 +74,10 @@ export default function Search({ showNsfw, setShowNsfw }: SearchProps) {
   const [showSnack, setShowSnack] = React.useState<boolean>(false);
 
   async function getRandoms() {
-    const g1 = await getRandomGif();
-    const g2 = await getRandomGif();
-    const g3 = await getRandomGif();
+    // giphy random api only returns 1 gif at a time ;(
+    const g1 = await getRandomGif(showNsfw);
+    const g2 = await getRandomGif(showNsfw);
+    const g3 = await getRandomGif(showNsfw);
     setGifs([g1, g2, g3]);
   }
 
@@ -86,7 +87,7 @@ export default function Search({ showNsfw, setShowNsfw }: SearchProps) {
 
   useEffect(() => {
     if (offset != 0) {
-      getGifs();
+      loadGifs();
       prettyFly("btnGetMore");
     }
   }, [offset]);
@@ -95,56 +96,19 @@ export default function Search({ showNsfw, setShowNsfw }: SearchProps) {
     return showNsfw ? "" : "&rating=pg";
   };
 
-  // giphy random api only returns 1 gif at a time ;(
-  async function getRandomGif(): Promise<Gif> {
-    const endpoint = `https://api.giphy.com/v1/gifs/random?api_key=${
-      config.giphyKey
-    }${getRating()}`;
-    return fetch(endpoint)
-      .then((res) => res.json())
-      .then(
-        (res) => {
-          return new Gif(res.data.images.original.mp4, res.data.bitly_gif_url);
-        },
-        (error) => {
-          console.log(error);
-          return new Gif();
-        }
-      );
-  }
-
-  const getGifs = () => {
+  async function loadGifs() {
     if (searchTerm === undefined) return;
-
-    const qOffset = `&offset=${offset * 9}`;
-    const endpoint = `https://api.giphy.com/v1/gifs/search?q=${searchTerm}&api_key=${
-      config.giphyKey
-    }&limit=9${getRating()}${qOffset}`;
-
-    fetch(endpoint)
-      .then((res) => res.json())
-      .then(
-        (result) => {
-          const newGifs = result.data.map(
-            (r: {
-              images: { original: { mp4: string } };
-              bitly_gif_url: string;
-            }) => {
-              return new Gif(r.images.original.mp4, r.bitly_gif_url);
-            }
-          );
-          offset === 0 ? setGifs(newGifs) : setGifs([...gifs, ...newGifs]);
-        },
-        (error) => {
-          console.log(error);
-        }
-      );
-  };
+    await getGifs(searchTerm, offset, showNsfw)
+      .then((newGifs) => {
+        offset === 0 ? setGifs(newGifs) : setGifs([...gifs, ...newGifs]);
+      })
+      .then((error) => console.log(error));
+  }
 
   const handleSearchClick = () => {
     prettyFly("btnSearch");
     setOffset(0);
-    getGifs();
+    loadGifs();
   };
 
   return (
