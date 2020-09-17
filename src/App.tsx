@@ -1,24 +1,25 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React from "react";
+import { createStyles, Theme, makeStyles } from "@material-ui/core/styles";
+import Header from "./components/header";
+import Search from "./components/search";
+
+import "./App.css";
+
+const useStyles = makeStyles((theme: Theme) =>
+  createStyles({
+    content: {
+      backgroundColor: theme.palette.background.default,
+      padding: "5rem",
+    },
+  })
+);
 
 function App() {
+  const [showNsfw, setShowNsfw] = React.useState(true);
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <Header showNsfw={showNsfw} setShowNsfw={setShowNsfw}/>
+      <Search showNsfw={showNsfw} setShowNsfw={setShowNsfw}/>
     </div>
   );
 }
