@@ -1,7 +1,7 @@
 import React from "react";
 import { createStyles, makeStyles, Theme } from "@material-ui/core/styles";
 import { AppBar, Toolbar } from "@material-ui/core";
-import TemporaryDrawer from "./Drawer";
+import TemporaryDrawer from "./drawer";
 import { showNsfwProps } from "../commonProps";
 
 const useStyles = makeStyles((theme: Theme) =>
