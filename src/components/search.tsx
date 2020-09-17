@@ -85,7 +85,7 @@ export default function Search({ showNsfw, setShowNsfw }: SearchProps) {
   }, [showNsfw])
 
   useEffect(() => {
-    if (offset != 0) {
+    if (offset !== 0) {
       loadGifs();
       prettyFly("btnGetMore");
     }

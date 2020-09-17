@@ -1,4 +1,3 @@
-import { rejects } from "assert";
 import config from "./config";
 import { Gif } from "./models";
 
