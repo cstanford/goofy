@@ -92,10 +92,6 @@ export default function Search({ showNsfw, setShowNsfw }: SearchProps) {
     }
   }, [offset]);
 
-  const getRating = () => {
-    return showNsfw ? "" : "&rating=pg";
-  };
-
   async function loadGifs() {
     if (searchTerm === undefined) return;
     await getGifs(searchTerm, offset, showNsfw)
@@ -169,7 +165,7 @@ export default function Search({ showNsfw, setShowNsfw }: SearchProps) {
                   }
                 />
                 <CardActionArea>
-                  <CardMedia component="video" src={gif.mp4Url} autoPlay loop />
+                  <CardMedia component="video" src={gif.mp4Url} autoPlay={true} loop={true} />
                 </CardActionArea>
               </Card>
             </Grid>
