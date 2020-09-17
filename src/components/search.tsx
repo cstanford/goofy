@@ -9,7 +9,6 @@ import {
   Theme,
   TextField,
   Card,
-  CardActions,
   CardMedia,
   CardActionArea,
   CardHeader,
@@ -38,14 +37,23 @@ const useStyles = makeStyles((theme: Theme) =>
     cardButton: {
       marginTop: "auto",
     },
+    paginationContainer: {
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    stepperButton: {
+      margin: theme.spacing(2),
+    },
   })
 );
 
-const prettyFly = () => {
-  const btn = document.getElementById("btnSearch");
+const prettyFly = (btnId: string) => {
+  const btn = document.getElementById(btnId);
+  const originalText = btn!.innerText;
   btn!.innerText = "Uh Huh! Uh Huh!";
   setTimeout(() => {
-    btn!.innerText = "gif it to me baby";
+    btn!.innerText = originalText;
   }, 2500);
 };
 
@@ -54,19 +62,26 @@ export interface SearchProps extends showNsfwProps {}
 export default function Search({ showNsfw, setShowNsfw }: SearchProps) {
   const classes = useStyles();
   const [searchTerm, setSearchTerm] = React.useState<string>("");
-  const [isLoaded, setIsLoaded] = React.useState<boolean>(false);
-  const [error, setError] = React.useState(null);
   const [gifs, setGifs] = React.useState<Gif[]>([]);
+  const [offset, setOffset] = React.useState<number>(0);
+
+  async function getRandoms() {
+    const g1 = await getRandomGif();
+    const g2 = await getRandomGif();
+    const g3 = await getRandomGif();
+    setGifs([g1, g2, g3]);
+  }
 
   useEffect(() => {
-    (async function doWork() {
-      const g1 = await getRandomGif();
-      const g2 = await getRandomGif();
-      const g3 = await getRandomGif();
-      setGifs([g1, g2, g3]);
-      setIsLoaded(true);
-    })();
+    getRandoms();
   }, [showNsfw]);
+
+  useEffect(() => {
+    if (offset != 0) {
+      getGifs();
+      prettyFly("btnGetMore");
+    }
+  }, [offset]);
 
   const getRating = () => {
     return showNsfw ? "" : "&rating=pg";
@@ -84,8 +99,6 @@ export default function Search({ showNsfw, setShowNsfw }: SearchProps) {
           return new Gif(res.data.images.original.mp4, res.data.bitly_gif_url);
         },
         (error) => {
-          setIsLoaded(true);
-          setError(error);
           console.log(error);
           return new Gif();
         }
@@ -95,36 +108,34 @@ export default function Search({ showNsfw, setShowNsfw }: SearchProps) {
   const getGifs = () => {
     if (searchTerm === undefined) return;
 
+    const qOffset = `&offset=${offset * 9}`;
     const endpoint = `https://api.giphy.com/v1/gifs/search?q=${searchTerm}&api_key=${
       config.giphyKey
-    }&limit=9${getRating()}`;
+    }&limit=9${getRating()}${qOffset}`;
 
     fetch(endpoint)
       .then((res) => res.json())
       .then(
         (result) => {
-          setGifs(
-            result.data.map(
-              (r: {
-                images: { original: { mp4: string } };
-                bitly_gif_url: string;
-              }) => {
-                return new Gif(r.images.original.mp4, r.bitly_gif_url);
-              }
-            )
+          const newGifs = result.data.map(
+            (r: {
+              images: { original: { mp4: string } };
+              bitly_gif_url: string;
+            }) => {
+              return new Gif(r.images.original.mp4, r.bitly_gif_url);
+            }
           );
-          setIsLoaded(true);
+          offset === 0 ? setGifs(newGifs) : setGifs([...gifs, ...newGifs]);
         },
         (error) => {
-          setIsLoaded(true);
-          setError(error);
           console.log(error);
         }
       );
   };
 
   const handleSearchClick = () => {
-    prettyFly();
+    prettyFly("btnSearch");
+    setOffset(0);
     getGifs();
   };
 
@@ -157,7 +168,10 @@ export default function Search({ showNsfw, setShowNsfw }: SearchProps) {
                 variant="outlined"
                 color="primary"
                 id="btnSearch"
-                onClick={handleSearchClick}
+                onClick={() => {
+                  setOffset(0);
+                  handleSearchClick();
+                }}
               >
                 gif it to me baby
               </Button>
@@ -189,6 +203,19 @@ export default function Search({ showNsfw, setShowNsfw }: SearchProps) {
           ))}
         </Grid>
       </Container>
+      <div hidden={gifs.length <= 3}>
+        <Container className={classes.paginationContainer}>
+          <Button
+            variant="outlined"
+            color="primary"
+            id="btnGetMore"
+            className={classes.stepperButton}
+            onClick={() => setOffset(offset + 1)}
+          >
+            Gif me more!
+          </Button>
+        </Container>
+      </div>
     </div>
   );
 }
