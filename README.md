@@ -1,5 +1,7 @@
 Check it the live site out [here](https://goofygifsearch.netlify.app/).
 
+To run the project simply clone, enter a giphy api key in /src/config.ts and yarn start. 
+
 Also try it out on mobile ;)
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
