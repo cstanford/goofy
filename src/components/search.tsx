@@ -82,30 +82,26 @@ export default function Search({ showNsfw, setShowNsfw }: SearchProps) {
       setGifs([g1, g2, g3]);
     };
     getInitialData();
-  }, [showNsfw])
+  }, [showNsfw]);
 
   useEffect(() => {
     if (offset !== 0) {
-      loadGifs();
+      const loadGifs = async () => {
+        const newGifs = await getGifs(searchTerm, offset, showNsfw);
+        setGifs(gifs => [...gifs, ...newGifs]);
+      };
       prettyFly("btnGetMore");
+      loadGifs();
     }
-  }, [offset]);
+  }, [offset, searchTerm, showNsfw]);
 
-  async function loadGifs() {
-    await getGifs(searchTerm, offset, showNsfw)
-      .then((newGifs) => {
-        offset === 0 ? setGifs(newGifs) : setGifs([...gifs, ...newGifs]);
-      })
-      .then((error) => console.log(error));
-  }
+  const handleSearchClick = async () => {
+    if (searchTerm === undefined || searchTerm.trim() === "") return;
 
-  const handleSearchClick = () => {
-    if (searchTerm === undefined || searchTerm.trim() === '') 
-        return;
-
-    prettyFly("btnSearch");
     setOffset(0);
-    loadGifs();
+    prettyFly("btnSearch");
+    const newGifs = await getGifs(searchTerm, 0, showNsfw);
+    setGifs(newGifs);
   };
 
   return (
@@ -138,7 +134,6 @@ export default function Search({ showNsfw, setShowNsfw }: SearchProps) {
                 color="primary"
                 id="btnSearch"
                 onClick={() => {
-                  setOffset(0);
                   handleSearchClick();
                 }}
               >
@@ -166,7 +161,12 @@ export default function Search({ showNsfw, setShowNsfw }: SearchProps) {
                   }
                 />
                 <CardActionArea>
-                  <CardMedia component="video" src={gif.mp4Url} autoPlay={true} loop={true} />
+                  <CardMedia
+                    component="video"
+                    src={gif.mp4Url}
+                    autoPlay={true}
+                    loop={true}
+                  />
                 </CardActionArea>
               </Card>
             </Grid>
